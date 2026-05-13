@@ -1,6 +1,20 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function RegisterScreen({ navigation }) {
+  const [fecha, setFecha] = useState(new Date());
+  const [mostrarPicker, setMostrarPicker] = useState(false);
+
+  const onCambioFecha = (event, fechaSeleccionada) => {
+    setMostrarPicker(false);
+    if (fechaSeleccionada) setFecha(fechaSeleccionada);
+  };
+
+  const formatearFecha = (fecha) => {
+    return `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
@@ -9,8 +23,21 @@ export default function RegisterScreen({ navigation }) {
       <TextInput style={styles.input} placeholder="Nombre" />
       <TextInput style={styles.input} placeholder="Apellido" />
       <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" />
-      <TextInput style={styles.input} placeholder="Fecha de nacimiento (DD/MM/AAAA)" />
       <TextInput style={styles.input} placeholder="Contraseña" secureTextEntry />
+
+      <TouchableOpacity style={styles.input} onPress={() => setMostrarPicker(true)}>
+        <Text style={styles.fechaTexto}>{formatearFecha(fecha)}</Text>
+      </TouchableOpacity>
+
+      {mostrarPicker && (
+        <DateTimePicker
+          value={fecha}
+          mode="date"
+          display="spinner"
+          onChange={onCambioFecha}
+          maximumDate={new Date()}
+        />
+      )}
 
       <TouchableOpacity style={styles.botonPrincipal}>
         <Text style={styles.botonTexto}>Registrarse</Text>
@@ -45,6 +72,11 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 15,
     fontSize: 16,
+    justifyContent: 'center',
+  },
+  fechaTexto: {
+    fontSize: 16,
+    color: '#555555',
   },
   botonPrincipal: {
     backgroundColor: '#222222',
