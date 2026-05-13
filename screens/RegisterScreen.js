@@ -6,10 +6,24 @@ export default function RegisterScreen({ navigation }) {
   const [fecha, setFecha] = useState(new Date());
   const [mostrarPicker, setMostrarPicker] = useState(false);
 
-  const onCambioFecha = (event, fechaSeleccionada) => {
-    setMostrarPicker(false);
-    if (fechaSeleccionada) setFecha(fechaSeleccionada);
-  };
+ const [errorEdad, setErrorEdad] = useState('');
+
+const onCambioFecha = (event, fechaSeleccionada) => {
+  setMostrarPicker(false);
+  if (fechaSeleccionada) {
+    const hoy = new Date();
+    const edad = hoy.getFullYear() - fechaSeleccionada.getFullYear();
+    const cumpleEsteAnio = hoy < new Date(hoy.getFullYear(), fechaSeleccionada.getMonth(), fechaSeleccionada.getDate());
+    const edadReal = cumpleEsteAnio ? edad - 1 : edad;
+
+    if (edadReal < 18) {
+      setErrorEdad('Tenés que ser mayor de 18 años para registrarte.');
+    } else {
+      setErrorEdad('');
+      setFecha(fechaSeleccionada);
+    }
+  }
+};
 
   const formatearFecha = (fecha) => {
     return `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
