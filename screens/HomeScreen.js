@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 export default function HomeScreen({ navigation }) {
   return (
-    <View style={styles.container}>
+    <View style=  {styles.container}>
 
       <View style={styles.navbar}>
         <Text style={styles.navLogo}>Roomie Finder</Text>
