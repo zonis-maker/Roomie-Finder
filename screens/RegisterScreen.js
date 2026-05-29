@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function RegisterScreen({ navigation }) {
@@ -19,6 +20,7 @@ export default function RegisterScreen({ navigation }) {
   const [contrasena, setContrasena] = useState('');
   const [errorEmail, setErrorEmail] = useState('');
   const [errorContrasena, setErrorContrasena] = useState('');
+  const [verContrasena, setVerContrasena] = useState(false);
 
   const generos = ['Masculino', 'Femenino', 'No binario', 'Prefiero no decir'];
 
@@ -67,9 +69,7 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
-  const puedecontinuar = aceptaTerminos && errorEdad === '' && errorEmail === '' && email !== '' && contrasena !== '';
-
-  return (
+const puedeContinuar = aceptaTerminos && errorEdad === '' && errorEmail === '' && email !== '' && contrasena !== '' && nombre !== '' && dni !== '' && genero !== ''; return (
     <ScrollView contentContainerStyle={styles.container}>
 
       <Text style={styles.titulo}>Crear Perfil</Text>
@@ -137,13 +137,18 @@ export default function RegisterScreen({ navigation }) {
           />
         )}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          secureTextEntry
-          value={contrasena}
-          onChangeText={validarContrasena}
-        />
+        <View style={styles.inputConOjo}>
+  <TextInput
+    style={styles.inputSinBorde}
+    placeholder="Contraseña"
+    secureTextEntry={!verContrasena}
+    value={contrasena}
+    onChangeText={validarContrasena}
+  />
+  <TouchableOpacity onPress={() => setVerContrasena(!verContrasena)}>
+  <Ionicons name={verContrasena ? 'eye-off-outline' : 'eye-outline'} size={22} color="#888888" />
+</TouchableOpacity>
+</View>
         {errorContrasena !== '' && <Text style={styles.error}>{errorContrasena}</Text>}
 
         <TouchableOpacity
@@ -212,7 +217,7 @@ export default function RegisterScreen({ navigation }) {
         </View>
 
         <TouchableOpacity
-          style={[styles.botonContinuar, !puedeontinuar && styles.botonDesactivado]}
+style={[styles.botonContinuar, !puedeContinuar && styles.botonDesactivado]}
           onPress={() => {
             if (!aceptaTerminos) alert('Tenés que aceptar los términos y condiciones.');
             else if (errorEdad !== '') alert('Tenés que ser mayor de 18 años.');
@@ -437,8 +442,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eeeeee',
   },
-  dropdownTexto: {
-    fontSize: 15,x
-    color: '#333333',
-  },
+  inputConOjo: {
+  backgroundColor: '#ffffff',
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  marginBottom: 12,
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+inputSinBorde: {
+  flex: 1,
+  fontSize: 15,
+  paddingVertical: 12,
+},
+ojo: {
+  fontSize: 18,
+  paddingLeft: 8,
+},
+ 
 });
