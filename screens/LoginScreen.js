@@ -16,6 +16,18 @@ export default function LoginScreen({ navigation }) {
 
   const puedeContinuar = errorEmail === '' && email !== '' && contrasena !== '';
 
+  const handleEntrar = () => {
+    if (email === '') {
+      alert('Ingresá tu correo electrónico.');
+    } else if (errorEmail !== '') {
+      alert('El email no es válido.');
+    } else if (contrasena === '') {
+      alert('Ingresá tu contraseña.');
+    } else {
+      navigation.navigate('Home');
+    }
+  };
+
   return (
     <View style={styles.container}>
 
@@ -56,9 +68,7 @@ export default function LoginScreen({ navigation }) {
 
         <TouchableOpacity
           style={[styles.botonEntrar, !puedeContinuar && styles.botonDesactivado]}
-          onPress={() => {
-            if (!puedeContinuar) alert('Completá todos los campos correctamente.');
-          }}
+          onPress={handleEntrar}
         >
           <Text style={styles.botonEntrarTexto}>Entrar</Text>
         </TouchableOpacity>

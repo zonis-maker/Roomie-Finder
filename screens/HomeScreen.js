@@ -5,7 +5,7 @@ export default function HomeScreen({ navigation }) {
     <View style=  {styles.container}>
 
       <View style={styles.navbar}>
-        <Text style={styles.navLogo}>Roomie Finder</Text>
+        <Text style={styles.navLogo}>Logo</Text>
         <View style={styles.navBotones}>
           <TouchableOpacity 
             style={styles.boton}
@@ -52,14 +52,15 @@ const styles = StyleSheet.create({
   },
   navBotones: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 15,
   },
   boton: {
     borderWidth: 1,
     borderColor: '#333333',
-    borderRadius: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    borderRadius: 20,
+    paddingVertical: 8,
+    width: 115,
+    alignItems: 'center',
   },
   botonTexto: {
     fontSize: 14,

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function RegisterScreen({ navigation }) {
   const [fecha, setFecha] = useState(new Date());
@@ -21,26 +22,52 @@ export default function RegisterScreen({ navigation }) {
   const [errorEmail, setErrorEmail] = useState('');
   const [errorContrasena, setErrorContrasena] = useState('');
   const [verContrasena, setVerContrasena] = useState(false);
+  const [errorDni, setErrorDni] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [errorDescripcion, setErrorDescripcion] = useState('');
+
+  const [fotoPerfil, setFotoPerfil] = useState(null);
+
+  const elegirFoto = async () => {
+    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permiso.granted) {
+      alert('Necesitás dar permiso para acceder a la galería.');
+      return;
+    }
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!resultado.canceled) {
+      setFotoPerfil(resultado.assets[0].uri);
+    }
+  };
 
   const generos = ['Masculino', 'Femenino', 'No binario', 'Prefiero no decir'];
+
+  const validarDni = (texto) => {
+    const soloNumeros = texto.replace(/[^0-9]/g, '');
+    setDni(soloNumeros);
+    setErrorDni(soloNumeros.length < 7 ? 'El DNI debe tener al menos 7 dígitos.' : '');
+  };
+
+  const validarDescripcion = (texto) => {
+    setDescripcion(texto);
+    const palabras = texto.trim().split(/\s+/).filter(p => p.length > 0);
+    setErrorDescripcion(palabras.length < 50 ? `Mínimo 50 palabras (tenés ${palabras.length}).` : '');
+  };
 
   const validarEmail = (texto) => {
     setEmail(texto);
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!regex.test(texto)) {
-      setErrorEmail('Ingresá un email válido.');
-    } else {
-      setErrorEmail('');
-    }
+    setErrorEmail(regex.test(texto) ? '' : 'Ingresá un email válido.');
   };
 
   const validarContrasena = (texto) => {
     setContrasena(texto);
-    if (texto.length < 6) {
-      setErrorContrasena('Mínimo 6 caracteres.');
-    } else {
-      setErrorContrasena('');
-    }
+    setErrorContrasena(texto.length < 6 ? 'Mínimo 6 caracteres.' : '');
   };
 
   const onCambioFecha = (event, fechaSeleccionada) => {
@@ -69,22 +96,72 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
-const puedeContinuar = aceptaTerminos && errorEdad === '' && errorEmail === '' && email !== '' && contrasena !== '' && nombre !== '' && dni !== '' && genero !== ''; return (
+  const puedeContinuar =
+    nombre !== '' &&
+    dni !== '' &&
+    errorDni === '' &&
+    genero !== '' &&
+    email !== '' &&
+    errorEmail === '' &&
+    errorEdad === '' &&
+    contrasena !== '' &&
+    errorContrasena === '' &&
+    errorDescripcion === '' &&
+    descripcion !== '' &&
+    aceptaTerminos;
+
+  const handleContinuar = () => {
+    if (nombre === '') {
+      alert('Ingresá tu nombre completo.');
+    } else if (dni === '') {
+      alert('Ingresá tu DNI.');
+    } else if (errorDni !== '') {
+      alert('El DNI solo puede contener números.');
+    } else if (genero === '') {
+      alert('Seleccioná un género.');
+    } else if (email === '') {
+      alert('Ingresá tu correo electrónico.');
+    } else if (errorEmail !== '') {
+      alert('El email no es válido.');
+    } else if (errorEdad !== '') {
+      alert('Tenés que ser mayor de 18 años.');
+    } else if (contrasena === '') {
+      alert('Ingresá una contraseña.');
+    } else if (errorContrasena !== '') {
+      alert('La contraseña necesita al menos 6 caracteres.');
+    } else if (descripcion === '' || errorDescripcion !== '') {
+      alert('La descripción personal necesita al menos 50 palabras.');
+    } else if (!aceptaTerminos) {
+      alert('Tenés que aceptar los términos y condiciones.');
+    } else {
+      navigation.navigate('Home');
+    }
+  };
+
+  return (
     <ScrollView contentContainerStyle={styles.container}>
 
       <Text style={styles.titulo}>Crear Perfil</Text>
 
       <View style={styles.card}>
 
-        <TouchableOpacity style={styles.fotoPerfil}>
-          <View style={styles.fotoCirculo} />
-          <Text style={styles.fotoTexto}>Foto de perfil</Text>
+        <TouchableOpacity style={styles.fotoPerfil} onPress={elegirFoto}>
+          <View style={styles.fotoCirculo}>
+            {fotoPerfil ? (
+              <Image source={{ uri: fotoPerfil }} style={styles.fotoImagen} />
+            ) : (
+              <Ionicons name="camera" size={48} color="#333333" />
+            )}
+          </View>
+          <View style={styles.fotoBotonMas}>
+            <Text style={styles.fotoMasTexto}>+</Text>
+          </View>
         </TouchableOpacity>
 
         <TextInput style={styles.input} placeholder="Nombre Completo" value={nombre} onChangeText={setNombre} />
 
         <View style={styles.fila}>
-          <TextInput style={[styles.input, styles.mitad]} placeholder="DNI" keyboardType="numeric" value={dni} onChangeText={setDni} />
+          <TextInput style={[styles.input, styles.mitad]} placeholder="DNI" keyboardType="numeric" value={dni} onChangeText={validarDni} />
 
           <TouchableOpacity
             style={[styles.input, styles.mitad, styles.selectorGenero]}
@@ -96,6 +173,7 @@ const puedeContinuar = aceptaTerminos && errorEdad === '' && errorEmail === '' &
             <Text style={styles.flecha}>{mostrarGenero ? '▲' : '▼'}</Text>
           </TouchableOpacity>
         </View>
+        {errorDni !== '' && <Text style={styles.error}>{errorDni}</Text>}
 
         {mostrarGenero && (
           <View style={styles.dropdown}>
@@ -138,17 +216,17 @@ const puedeContinuar = aceptaTerminos && errorEdad === '' && errorEmail === '' &
         )}
 
         <View style={styles.inputConOjo}>
-  <TextInput
-    style={styles.inputSinBorde}
-    placeholder="Contraseña"
-    secureTextEntry={!verContrasena}
-    value={contrasena}
-    onChangeText={validarContrasena}
-  />
-  <TouchableOpacity onPress={() => setVerContrasena(!verContrasena)}>
-  <Ionicons name={verContrasena ? 'eye-off-outline' : 'eye-outline'} size={22} color="#888888" />
-</TouchableOpacity>
-</View>
+          <TextInput
+            style={styles.inputSinBorde}
+            placeholder="Contraseña"
+            secureTextEntry={!verContrasena}
+            value={contrasena}
+            onChangeText={validarContrasena}
+          />
+          <TouchableOpacity onPress={() => setVerContrasena(!verContrasena)}>
+            <Ionicons name={verContrasena ? 'eye-off-outline' : 'eye-outline'} size={22} color="#888888" />
+          </TouchableOpacity>
+        </View>
         {errorContrasena !== '' && <Text style={styles.error}>{errorContrasena}</Text>}
 
         <TouchableOpacity
@@ -169,8 +247,10 @@ const puedeContinuar = aceptaTerminos && errorEdad === '' && errorEmail === '' &
             placeholderTextColor="#aaaaaa"
             multiline
             numberOfLines={4}
+            value={descripcion}
+            onChangeText={validarDescripcion}
           />
-          <Text style={styles.minimo}>Minimo 50 palabras</Text>
+          {errorDescripcion !== '' && <Text style={styles.error}>{errorDescripcion}</Text>}
         </View>
 
         <View style={styles.seccion}>
@@ -217,13 +297,8 @@ const puedeContinuar = aceptaTerminos && errorEdad === '' && errorEmail === '' &
         </View>
 
         <TouchableOpacity
-style={[styles.botonContinuar, !puedeContinuar && styles.botonDesactivado]}
-          onPress={() => {
-            if (!aceptaTerminos) alert('Tenés que aceptar los términos y condiciones.');
-            else if (errorEdad !== '') alert('Tenés que ser mayor de 18 años.');
-            else if (errorEmail !== '' || email === '') alert('Ingresá un email válido.');
-            else if (contrasena === '') alert('Ingresá una contraseña.');
-          }}
+          style={[styles.botonContinuar, !puedeContinuar && styles.botonDesactivado]}
+          onPress={handleContinuar}
         >
           <Text style={styles.botonTexto}>Continuar</Text>
         </TouchableOpacity>
@@ -260,15 +335,35 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   fotoCirculo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#cccccc',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#d0d0d0',
+    borderWidth: 3,
+    borderColor: '#999999',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  fotoTexto: {
-    marginTop: 8,
-    color: '#555555',
-    fontSize: 13,
+  fotoImagen: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  fotoBotonMas: {
+    position: 'absolute',
+    bottom: 0,
+    right: '31%',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#222222',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fotoMasTexto: {
+    color: '#ffffff',
+    fontSize: 20,
+    lineHeight: 22,
   },
   input: {
     backgroundColor: '#ffffff',
@@ -317,6 +412,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: -8,
   },
+  inputConOjo: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputSinBorde: {
+    flex: 1,
+    fontSize: 15,
+    paddingVertical: 12,
+  },
   terminosRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,8 +441,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxActivo: {
-    backgroundColor: '#222222',
-    borderColor: '#222222',
+    backgroundColor: '#888888',
+    borderColor: '#888888',
   },
   checkmark: {
     color: '#ffffff',
@@ -375,12 +483,12 @@ const styles = StyleSheet.create({
   },
   tag: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 14,
   },
   tagActivo: {
-    backgroundColor: '#222222',
+    backgroundColor: '#888888',
   },
   tagTexto: {
     fontSize: 13,
@@ -442,22 +550,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eeeeee',
   },
-  inputConOjo: {
-  backgroundColor: '#ffffff',
-  borderRadius: 8,
-  paddingHorizontal: 12,
-  marginBottom: 12,
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-inputSinBorde: {
-  flex: 1,
-  fontSize: 15,
-  paddingVertical: 12,
-},
-ojo: {
-  fontSize: 18,
-  paddingLeft: 8,
-},
- 
+  dropdownTexto: {
+    fontSize: 14,
+    color: '#333333',
+  },
 });
