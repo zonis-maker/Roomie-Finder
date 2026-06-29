@@ -1,30 +1,88 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity, Dimensions, Image } from 'react-native';
+import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { usePublicaciones } from '../context/PublicacionesContext';
+
+const { height: altoPantalla } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
-  return (
-    <View style=  {styles.container}>
+  const [busqueda, setBusqueda] = useState('');
+  const { publicaciones } = usePublicaciones();
 
-      <View style={styles.navbar}>
-        <Text style={styles.navLogo}>Logo</Text>
-        <View style={styles.navBotones}>
-          <TouchableOpacity 
-            style={styles.boton}
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text style={styles.botonTexto}>Iniciar sesión</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.boton}
-            onPress={() => navigation.navigate('Register')}
-          >
-            <Text style={styles.botonTexto}>Registro</Text>
+  const publicacionesFiltradas = publicaciones.filter(p =>
+    p.titulo.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  return (
+    <View style={styles.container}>
+
+      <ScrollView contentContainerStyle={styles.scroll}>
+
+        <View style={{ height: altoPantalla, justifyContent: 'flex-end', padding: 20 }}>
+          <TouchableOpacity style={styles.botonVolver} onPress={() => navigation.navigate('Primera')}>
+            <Text style={styles.botonVolverTexto}>[ VOLVER A PRIMERA - TEMP ]</Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.contenido}>
-        <Text style={styles.titulo}>Roomie Finder</Text>
-        <Text style={styles.subtitulo}>Encontrá tu compañero ideal</Text>
+        <View style={styles.seccion}>
+
+          <View style={styles.header}>
+            <Text style={styles.headerTitulo}>Roomie Finder</Text>
+            <View style={styles.headerCirculo} />
+          </View>
+
+          <Text style={styles.titulo}>Publicaciones</Text>
+
+          <View style={styles.barraBusqueda}>
+            <Ionicons name="search-outline" size={18} color="#888888" />
+            <TextInput
+              style={styles.inputBusqueda}
+              placeholder="Buscar por palabra clave"
+              placeholderTextColor="#aaaaaa"
+              value={busqueda}
+              onChangeText={setBusqueda}
+            />
+            <TouchableOpacity style={styles.botonMas} onPress={() => navigation.navigate('CrearPublicacion')}>
+              <Text style={styles.botonMasTexto}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          {publicacionesFiltradas.map((pub) => (
+            <TouchableOpacity key={pub.id} style={styles.card} onPress={() => navigation.navigate('Inscripcion', { publicacion: pub })}>
+              <View style={styles.cardImagen}>
+                {pub.imagenes && pub.imagenes.length > 0 ? (
+                  <Image source={{ uri: pub.imagenes[0] }} style={styles.cardImagenFoto} />
+                ) : (
+                  <Ionicons name="home" size={70} color="#333333" />
+                )}
+              </View>
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardTitulo}>{pub.titulo}</Text>
+                <View style={styles.cardUbicacionFila}>
+                  <Text style={styles.cardUbicacionTexto}>{pub.ubicacion}</Text>
+                  <Ionicons name="location-sharp" size={18} color="#333333" />
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+
+        </View>
+
+      </ScrollView>
+
+      <View style={styles.navBar}>
+        <TouchableOpacity style={[styles.navItem, styles.navItemActivo]}>
+          <Ionicons name="home" size={22} color="#111111" />
+          <Text style={styles.navTexto}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ChatsLista')}>
+          <Ionicons name="chatbubble-ellipses" size={22} color="#111111" />
+          <Text style={styles.navTexto}>Chats</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Perfil')}>
+          <Ionicons name="person" size={22} color="#111111" />
+          <Text style={styles.navTexto}>Perfil</Text>
+        </TouchableOpacity>
       </View>
 
     </View>
@@ -36,49 +94,140 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
-  navbar: {
+  scroll: {
+    backgroundColor: '#ffffff',
+  },
+  botonVolver: {
+    backgroundColor: '#ffcc00',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  botonVolverTexto: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  seccion: {
+    backgroundColor: '#e8e8e8',
+    paddingBottom: 24,
+  },
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    backgroundColor: '#e8e8e8',
+    paddingHorizontal: 16,
     paddingTop: 50,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#dddddd',
+    paddingBottom: 14,
   },
-  navLogo: {
+  headerTitulo: {
     fontSize: 18,
-    fontWeight: 'bold',
-  },
-  navBotones: {
-    flexDirection: 'row',
-    gap: 15,
-  },
-  boton: {
-    borderWidth: 1,
-    borderColor: '#333333',
-    borderRadius: 20,
-    paddingVertical: 8,
-    width: 115,
-    alignItems: 'center',
-  },
-  botonTexto: {
-    fontSize: 14,
-    color: '#333333',
-  },
-  contenido: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 30,
-  },
-  titulo: {
-    fontSize: 48,
     fontWeight: 'bold',
     color: '#222222',
   },
-  subtitulo: {
+  headerCirculo: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#bbbbbb',
+  },
+  titulo: {
     fontSize: 16,
-    color: '#888888',
-    marginTop: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingVertical: 12,
+    color: '#222222',
+  },
+  barraBusqueda: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    marginHorizontal: 16,
+    marginBottom: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  inputBusqueda: {
+    flex: 1,
+    fontSize: 14,
+    marginLeft: 8,
+    color: '#333333',
+  },
+  botonMas: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#555555',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  botonMasTexto: {
+    fontSize: 20,
+    color: '#555555',
+    lineHeight: 22,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    marginHorizontal: 16,
+    marginBottom: 14,
+    overflow: 'hidden',
+  },
+  cardImagen: {
+    height: 180,
+    backgroundColor: '#d0d0d0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardImagenFoto: {
+    width: '100%',
+    height: '100%',
+  },
+  cardInfo: {
+    padding: 12,
+  },
+  cardTitulo: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#222222',
+    marginBottom: 8,
+  },
+  cardUbicacionFila: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 4,
+  },
+  cardUbicacionTexto: {
+    fontSize: 13,
+    color: '#666666',
+  },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#d0d0d0',
+    paddingVertical: 12,
+    paddingBottom: 24,
+  },
+  navItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+  },
+  navItemActivo: {
+    backgroundColor: '#b8b8b8',
+  },
+  navTexto: {
+    fontSize: 15,
+    color: '#111111',
+    fontWeight: '500',
   },
 });

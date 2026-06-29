@@ -78,6 +78,11 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.botonSocialTexto}>Continuar con Google</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.botonGoogle}>
+          <Text style={styles.facebookF}>f</Text>
+          <Text style={styles.botonSocialTexto}>Continuar con Facebook</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
           <Text style={styles.registrate}>
             ¿No tienes cuenta? <Text style={styles.registrateNegrita}>Registrate</Text>
@@ -170,6 +175,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#4285F4',
+    marginRight: 10,
+    width: 24,
+    textAlign: 'center',
+  },
+  facebookF: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1877F2',
     marginRight: 10,
     width: 24,
     textAlign: 'center',

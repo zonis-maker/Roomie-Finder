@@ -146,16 +146,19 @@ export default function RegisterScreen({ navigation }) {
       <View style={styles.card}>
 
         <TouchableOpacity style={styles.fotoPerfil} onPress={elegirFoto}>
-          <View style={styles.fotoCirculo}>
-            {fotoPerfil ? (
-              <Image source={{ uri: fotoPerfil }} style={styles.fotoImagen} />
-            ) : (
-              <Ionicons name="camera" size={48} color="#333333" />
-            )}
+          <View style={styles.fotoContenedor}>
+            <View style={styles.fotoCirculo}>
+              {fotoPerfil ? (
+                <Image source={{ uri: fotoPerfil }} style={styles.fotoImagen} />
+              ) : (
+                <Ionicons name="camera" size={48} color="#333333" />
+              )}
+            </View>
+            <View style={styles.fotoBotonMas}>
+              <Text style={styles.fotoMasTexto}>+</Text>
+            </View>
           </View>
-          <View style={styles.fotoBotonMas}>
-            <Text style={styles.fotoMasTexto}>+</Text>
-          </View>
+          <Text style={styles.fotoTexto}>Foto de perfil</Text>
         </TouchableOpacity>
 
         <TextInput style={styles.input} placeholder="Nombre Completo" value={nombre} onChangeText={setNombre} />
@@ -349,10 +352,19 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
   },
+  fotoTexto: {
+    marginTop: 8,
+    color: '#555555',
+    fontSize: 13,
+  },
+  fotoContenedor: {
+    width: 120,
+    height: 120,
+  },
   fotoBotonMas: {
     position: 'absolute',
-    bottom: 0,
-    right: '31%',
+    bottom: 2,
+    right: 2,
     width: 32,
     height: 32,
     borderRadius: 16,
