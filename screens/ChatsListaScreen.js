@@ -41,15 +41,15 @@ export default function ChatsListaScreen({ navigation }) {
 
       <View style={styles.navBar}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Ionicons name="home" size={22} color="#111111" />
+          <Ionicons name="home" size={22} color="#1b2a66" />
           <Text style={styles.navTexto}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navItem, styles.navItemActivo]}>
-          <Ionicons name="chatbubble-ellipses" size={22} color="#111111" />
+          <Ionicons name="chatbubble-ellipses" size={22} color="#1b2a66" />
           <Text style={styles.navTexto}>Chats</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Perfil')}>
-          <Ionicons name="person" size={22} color="#111111" />
+          <Ionicons name="person" size={22} color="#1b2a66" />
           <Text style={styles.navTexto}>Perfil</Text>
         </TouchableOpacity>
       </View>
@@ -61,13 +61,13 @@ export default function ChatsListaScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e8e8e8',
+    backgroundColor: '#edeff5',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#e8e8e8',
+    backgroundColor: '#0f1b4d',
     paddingHorizontal: 16,
     paddingTop: 50,
     paddingBottom: 14,
@@ -75,34 +75,36 @@ const styles = StyleSheet.create({
   headerTitulo: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#222222',
+    color: '#ffffff',
   },
   headerCirculo: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#bbbbbb',
+    backgroundColor: '#dce4fa',
   },
   scroll: {
     padding: 16,
     paddingBottom: 30,
   },
   card: {
-    backgroundColor: '#d8d8d8',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 14,
     gap: 10,
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
   },
   cardTitulo: {
     fontSize: 20,
-    color: '#555555',
+    color: '#1b2a66',
     marginBottom: 4,
     paddingLeft: 4,
   },
   chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#eeeeee',
+    backgroundColor: '#edeff5',
     borderRadius: 10,
     padding: 12,
     gap: 12,
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#bbbbbb',
+    backgroundColor: '#dce4fa',
   },
   chatTextos: {
     flex: 1,
@@ -119,7 +121,7 @@ const styles = StyleSheet.create({
   chatNombre: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#222222',
+    color: '#1b2a66',
   },
   chatUltimo: {
     fontSize: 13,
@@ -130,7 +132,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#d0d0d0',
+    backgroundColor: '#edeff5',
     paddingVertical: 12,
     paddingBottom: 24,
   },
@@ -143,11 +145,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   navItemActivo: {
-    backgroundColor: '#b8b8b8',
+    backgroundColor: '#dce4fa',
   },
   navTexto: {
     fontSize: 15,
-    color: '#111111',
+    color: '#1b2a66',
     fontWeight: '500',
   },
 });

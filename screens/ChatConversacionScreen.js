@@ -45,7 +45,7 @@ export default function ChatConversacionScreen({ navigation, route }) {
             style={[styles.burbuja, msg.mio ? styles.burbujaPropia : styles.burbujaAjena]}
           >
             {msg.texto ? (
-              <Text style={styles.burbujaTexto}>{msg.texto}</Text>
+              <Text style={[styles.burbujaTexto, msg.mio && styles.burbujaTextoPropio]}>{msg.texto}</Text>
             ) : (
               <View style={styles.burbujaPlaceholder} />
             )}
@@ -57,27 +57,27 @@ export default function ChatConversacionScreen({ navigation, route }) {
         <TextInput
           style={styles.input}
           placeholder="Escribe un mensaje"
-          placeholderTextColor="#aaaaaa"
+          placeholderTextColor="#8a97b8"
           value={texto}
           onChangeText={setTexto}
           onSubmitEditing={enviar}
         />
         <TouchableOpacity style={styles.botonEnviar} onPress={enviar}>
-          <Ionicons name="chevron-forward" size={20} color="#555555" />
+          <Ionicons name="chevron-forward" size={20} color="#ffffff" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.navBar}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Ionicons name="home" size={22} color="#111111" />
+          <Ionicons name="home" size={22} color="#1b2a66" />
           <Text style={styles.navTexto}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navItem, styles.navItemActivo]} onPress={() => navigation.navigate('ChatsLista')}>
-          <Ionicons name="chatbubble-ellipses" size={22} color="#111111" />
+          <Ionicons name="chatbubble-ellipses" size={22} color="#1b2a66" />
           <Text style={styles.navTexto}>Chats</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Perfil')}>
-          <Ionicons name="person" size={22} color="#111111" />
+          <Ionicons name="person" size={22} color="#1b2a66" />
           <Text style={styles.navTexto}>Perfil</Text>
         </TouchableOpacity>
       </View>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#e8e8e8',
+    backgroundColor: '#0f1b4d',
     paddingHorizontal: 16,
     paddingTop: 50,
     paddingBottom: 14,
@@ -103,18 +103,18 @@ const styles = StyleSheet.create({
   headerTitulo: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#222222',
+    color: '#ffffff',
   },
   headerCirculo: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#bbbbbb',
+    backgroundColor: '#dce4fa',
   },
   subHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#edeff5',
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 10,
@@ -123,16 +123,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#bbbbbb',
+    backgroundColor: '#dce4fa',
   },
   subHeaderNombre: {
     flex: 1,
     fontSize: 16,
-    color: '#333333',
+    color: '#1b2a66',
   },
   subHeaderOpciones: {
     fontSize: 20,
-    color: '#555555',
+    color: '#1b2a66',
     letterSpacing: 2,
   },
   scroll: {
@@ -147,15 +147,18 @@ const styles = StyleSheet.create({
   },
   burbujaAjena: {
     alignSelf: 'flex-start',
-    backgroundColor: '#e8e8e8',
+    backgroundColor: '#edeff5',
   },
   burbujaPropia: {
     alignSelf: 'flex-end',
-    backgroundColor: '#d8d8d8',
+    backgroundColor: '#2f5fd9',
   },
   burbujaTexto: {
     fontSize: 14,
     color: '#333333',
+  },
+  burbujaTextoPropio: {
+    color: '#ffffff',
   },
   burbujaPlaceholder: {
     width: 120,
@@ -170,12 +173,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#ffffff',
     borderTopWidth: 1,
-    borderTopColor: '#eeeeee',
+    borderTopColor: '#b7c6f0',
     gap: 8,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#edeff5',
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -186,7 +189,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#2f5fd9',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -194,7 +197,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#d0d0d0',
+    backgroundColor: '#edeff5',
     paddingVertical: 12,
     paddingBottom: 24,
   },
@@ -207,11 +210,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   navItemActivo: {
-    backgroundColor: '#b8b8b8',
+    backgroundColor: '#dce4fa',
   },
   navTexto: {
     fontSize: 15,
-    color: '#111111',
+    color: '#1b2a66',
     fontWeight: '500',
   },
 });

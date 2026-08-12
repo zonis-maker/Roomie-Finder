@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }) {
+  const { iniciarSesion } = useAuth();
   const [email, setEmail] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [verContrasena, setVerContrasena] = useState(false);
   const [errorEmail, setErrorEmail] = useState('');
+  const [cargando, setCargando] = useState(false);
 
   const validarEmail = (texto) => {
     setEmail(texto);
@@ -16,15 +19,30 @@ export default function LoginScreen({ navigation }) {
 
   const puedeContinuar = errorEmail === '' && email !== '' && contrasena !== '';
 
-  const handleEntrar = () => {
-    if (email === '') {
-      alert('Ingresá tu correo electrónico.');
-    } else if (errorEmail !== '') {
-      alert('El email no es válido.');
-    } else if (contrasena === '') {
-      alert('Ingresá tu contraseña.');
-    } else {
-      navigation.navigate('Home');
+  const handleEntrar = async () => {
+    if (email === '') { alert('Ingresá tu correo electrónico.'); return; }
+    if (errorEmail !== '') { alert('El email no es válido.'); return; }
+    if (contrasena === '') { alert('Ingresá tu contraseña.'); return; }
+
+    setCargando(true);
+    try {
+      const respuesta = await fetch('https://roomie-finder-bay.vercel.app/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: contrasena }),
+      });
+
+      if (respuesta.ok) {
+        const datos = await respuesta.json();
+        iniciarSesion(datos.token, datos.user_id);
+        navigation.navigate('Home');
+      } else {
+        alert('Email o contraseña incorrectos.');
+      }
+    } catch (error) {
+      alert('No se pudo conectar al servidor. Revisá tu conexión.');
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -67,18 +85,25 @@ export default function LoginScreen({ navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.botonEntrar, !puedeContinuar && styles.botonDesactivado]}
+          style={[styles.botonEntrar, (!puedeContinuar || cargando) && styles.botonDesactivado]}
           onPress={handleEntrar}
+          disabled={cargando}
         >
-          <Text style={styles.botonEntrarTexto}>Entrar</Text>
+          <Text style={styles.botonEntrarTexto}>{cargando ? 'Entrando...' : 'Entrar'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botonGoogle}>
+        <TouchableOpacity
+          style={styles.botonGoogle}
+          onPress={() => alert('El login con Google todavía no está disponible: falta que el backend tenga un endpoint para validarlo.')}
+        >
           <Text style={styles.googleG}>G</Text>
           <Text style={styles.botonSocialTexto}>Continuar con Google</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botonGoogle}>
+        <TouchableOpacity
+          style={styles.botonGoogle}
+          onPress={() => alert('El login con Facebook todavía no está disponible: falta que el backend tenga un endpoint para validarlo.')}
+        >
           <Text style={styles.facebookF}>f</Text>
           <Text style={styles.botonSocialTexto}>Continuar con Facebook</Text>
         </TouchableOpacity>
@@ -97,29 +122,32 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e8e8e8',
+    backgroundColor: '#edeff5',
   },
   titulo: {
     fontSize: 22,
     fontWeight: 'bold',
-    backgroundColor: '#d0d0d0',
+    color: '#ffffff',
+    backgroundColor: '#0f1b4d',
     padding: 20,
     paddingTop: 50,
   },
   card: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
     margin: 20,
     borderRadius: 12,
     padding: 24,
   },
   label: {
     fontSize: 14,
-    color: '#333333',
+    color: '#1b2a66',
     marginBottom: 6,
   },
   input: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
     padding: 12,
     fontSize: 15,
     marginBottom: 16,
@@ -127,6 +155,8 @@ const styles = StyleSheet.create({
   inputConOjo: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
     paddingHorizontal: 12,
     marginBottom: 16,
     flexDirection: 'row',
@@ -144,12 +174,12 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
   olvide: {
-    color: '#555555',
+    color: '#1b2a66',
     fontSize: 13,
     marginBottom: 20,
   },
   botonEntrar: {
-    backgroundColor: '#222222',
+    backgroundColor: '#2f5fd9',
     borderRadius: 30,
     padding: 15,
     alignItems: 'center',
@@ -166,6 +196,8 @@ const styles = StyleSheet.create({
   botonGoogle: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,6 +230,6 @@ const styles = StyleSheet.create({
   },
   registrateNegrita: {
     fontWeight: 'bold',
-    color: '#222222',
+    color: '#1b2a66',
   },
 });

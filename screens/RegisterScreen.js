@@ -3,8 +3,11 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Image 
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '../context/AuthContext';
+import { subirImagen } from '../utils/subirImagen';
 
 export default function RegisterScreen({ navigation }) {
+  const { iniciarSesion } = useAuth();
   const [fecha, setFecha] = useState(new Date());
   const [mostrarPicker, setMostrarPicker] = useState(false);
   const [errorEdad, setErrorEdad] = useState('Mayor de 18 requerido');
@@ -16,6 +19,7 @@ export default function RegisterScreen({ navigation }) {
   const [mostrarInputNuevo, setMostrarInputNuevo] = useState(false);
   const [nuevaPreferencia, setNuevaPreferencia] = useState('');
   const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
   const [dni, setDni] = useState('');
   const [email, setEmail] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -25,6 +29,7 @@ export default function RegisterScreen({ navigation }) {
   const [errorDni, setErrorDni] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [errorDescripcion, setErrorDescripcion] = useState('');
+  const [cargando, setCargando] = useState(false);
 
   const [fotoPerfil, setFotoPerfil] = useState(null);
 
@@ -46,6 +51,12 @@ export default function RegisterScreen({ navigation }) {
   };
 
   const generos = ['Masculino', 'Femenino', 'No binario', 'Prefiero no decir'];
+  const generoValores = {
+    'Masculino': 'masculino',
+    'Femenino': 'femenino',
+    'No binario': 'no_binario',
+    'Prefiero no decir': 'prefiero_no_decir',
+  };
 
   const validarDni = (texto) => {
     const soloNumeros = texto.replace(/[^0-9]/g, '');
@@ -67,7 +78,7 @@ export default function RegisterScreen({ navigation }) {
 
   const validarContrasena = (texto) => {
     setContrasena(texto);
-    setErrorContrasena(texto.length < 6 ? 'Mínimo 6 caracteres.' : '');
+    setErrorContrasena(texto.length < 8 ? 'Mínimo 8 caracteres.' : '');
   };
 
   const onCambioFecha = (event, fechaSeleccionada) => {
@@ -88,6 +99,9 @@ export default function RegisterScreen({ navigation }) {
 
   const formatearFecha = (f) => `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
 
+  const formatearFechaISO = (f) =>
+    `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
+
   const togglePreferencia = (pref) => {
     if (seleccionadas.includes(pref)) {
       setSeleccionadas(seleccionadas.filter(p => p !== pref));
@@ -98,6 +112,7 @@ export default function RegisterScreen({ navigation }) {
 
   const puedeContinuar =
     nombre !== '' &&
+    apellido !== '' &&
     dni !== '' &&
     errorDni === '' &&
     genero !== '' &&
@@ -110,9 +125,11 @@ export default function RegisterScreen({ navigation }) {
     descripcion !== '' &&
     aceptaTerminos;
 
-  const handleContinuar = () => {
+  const handleContinuar = async () => {
     if (nombre === '') {
       alert('Ingresá tu nombre completo.');
+    } else if (apellido === '') {
+      alert('Ingresá tu apellido.');
     } else if (dni === '') {
       alert('Ingresá tu DNI.');
     } else if (errorDni !== '') {
@@ -128,13 +145,70 @@ export default function RegisterScreen({ navigation }) {
     } else if (contrasena === '') {
       alert('Ingresá una contraseña.');
     } else if (errorContrasena !== '') {
-      alert('La contraseña necesita al menos 6 caracteres.');
+      alert('La contraseña necesita al menos 8 caracteres.');
     } else if (descripcion === '' || errorDescripcion !== '') {
       alert('La descripción personal necesita al menos 50 palabras.');
     } else if (!aceptaTerminos) {
       alert('Tenés que aceptar los términos y condiciones.');
     } else {
-      navigation.navigate('Home');
+      setCargando(true);
+      try {
+        const respuesta = await fetch('https://roomie-finder-bay.vercel.app/users/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre,
+            apellido,
+            dni,
+            email,
+            password: contrasena,
+            fecha_nacimiento: formatearFechaISO(fecha),
+            genero: generoValores[genero],
+          }),
+        });
+
+        if (respuesta.ok) {
+          const loginRespuesta = await fetch('https://roomie-finder-bay.vercel.app/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: contrasena }),
+          });
+
+          if (loginRespuesta.ok) {
+            const sesion = await loginRespuesta.json();
+            iniciarSesion(sesion.token, sesion.user_id);
+
+            if (fotoPerfil) {
+              try {
+                const fotoUrl = await subirImagen(fotoPerfil, sesion.token);
+                await fetch(`https://roomie-finder-bay.vercel.app/users/${sesion.user_id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${sesion.token}`,
+                  },
+                  body: JSON.stringify({ foto_perfil_url: fotoUrl }),
+                });
+              } catch (errorFoto) {
+                alert('La cuenta se creó, pero no se pudo subir la foto de perfil. La podés agregar después desde Editar Perfil.');
+              }
+            }
+
+            navigation.navigate('Home');
+          } else {
+            alert('Cuenta creada con éxito. Iniciá sesión para continuar.');
+            navigation.navigate('Login');
+          }
+        } else if (respuesta.status === 422) {
+          alert('Revisá los datos ingresados, hay algo inválido.');
+        } else {
+          alert('No se pudo crear la cuenta. Puede que el email o el DNI ya estén registrados.');
+        }
+      } catch (error) {
+        alert('No se pudo conectar al servidor. Revisá tu conexión.');
+      } finally {
+        setCargando(false);
+      }
     }
   };
 
@@ -161,7 +235,9 @@ export default function RegisterScreen({ navigation }) {
           <Text style={styles.fotoTexto}>Foto de perfil</Text>
         </TouchableOpacity>
 
-        <TextInput style={styles.input} placeholder="Nombre Completo" value={nombre} onChangeText={setNombre} />
+        <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
+
+        <TextInput style={styles.input} placeholder="Apellido" value={apellido} onChangeText={setApellido} />
 
         <View style={styles.fila}>
           <TextInput style={[styles.input, styles.mitad]} placeholder="DNI" keyboardType="numeric" value={dni} onChangeText={validarDni} />
@@ -300,10 +376,11 @@ export default function RegisterScreen({ navigation }) {
         </View>
 
         <TouchableOpacity
-          style={[styles.botonContinuar, !puedeContinuar && styles.botonDesactivado]}
+          style={[styles.botonContinuar, (!puedeContinuar || cargando) && styles.botonDesactivado]}
           onPress={handleContinuar}
+          disabled={cargando}
         >
-          <Text style={styles.botonTexto}>Continuar</Text>
+          <Text style={styles.botonTexto}>{cargando ? 'Creando cuenta...' : 'Continuar'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -318,17 +395,18 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#e8e8e8',
+    backgroundColor: '#edeff5',
   },
   titulo: {
     fontSize: 22,
     fontWeight: 'bold',
-    backgroundColor: '#d0d0d0',
+    color: '#ffffff',
+    backgroundColor: '#0f1b4d',
     padding: 20,
     paddingTop: 50,
   },
   card: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
     margin: 20,
     borderRadius: 12,
     padding: 24,
@@ -341,9 +419,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#d0d0d0',
+    backgroundColor: '#edeff5',
     borderWidth: 3,
-    borderColor: '#999999',
+    borderColor: '#b7c6f0',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -354,7 +432,7 @@ const styles = StyleSheet.create({
   },
   fotoTexto: {
     marginTop: 8,
-    color: '#555555',
+    color: '#1b2a66',
     fontSize: 13,
   },
   fotoContenedor: {
@@ -368,7 +446,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#222222',
+    backgroundColor: '#2f5fd9',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -380,6 +458,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
     padding: 12,
     fontSize: 15,
     marginBottom: 12,
@@ -402,12 +482,14 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    color: '#666666',
+    color: '#1b2a66',
     marginBottom: 4,
   },
   inputFecha: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
     padding: 12,
     marginBottom: 12,
     flexDirection: 'row',
@@ -427,6 +509,8 @@ const styles = StyleSheet.create({
   inputConOjo: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
     paddingHorizontal: 12,
     marginBottom: 12,
     flexDirection: 'row',
@@ -446,15 +530,15 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: '#888888',
+    borderColor: '#2f5fd9',
     borderRadius: 4,
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxActivo: {
-    backgroundColor: '#888888',
-    borderColor: '#888888',
+    backgroundColor: '#2f5fd9',
+    borderColor: '#2f5fd9',
   },
   checkmark: {
     color: '#ffffff',
@@ -465,14 +549,14 @@ const styles = StyleSheet.create({
     color: '#444444',
   },
   seccion: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#edeff5',
     borderRadius: 8,
     padding: 14,
     marginBottom: 14,
   },
   seccionTitulo: {
     fontSize: 14,
-    color: '#666666',
+    color: '#1b2a66',
     marginBottom: 10,
   },
   textArea: {
@@ -495,12 +579,15 @@ const styles = StyleSheet.create({
   },
   tag: {
     backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#b7c6f0',
     borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 14,
   },
   tagActivo: {
-    backgroundColor: '#888888',
+    backgroundColor: '#2f5fd9',
+    borderColor: '#2f5fd9',
   },
   tagTexto: {
     fontSize: 13,
@@ -528,7 +615,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   botonContinuar: {
-    backgroundColor: '#d0d0d0',
+    backgroundColor: '#2f5fd9',
     borderRadius: 20,
     padding: 14,
     alignItems: 'center',
@@ -540,7 +627,7 @@ const styles = StyleSheet.create({
   },
   botonTexto: {
     fontSize: 16,
-    color: '#333333',
+    color: '#ffffff',
   },
   link: {
     textAlign: 'center',
@@ -549,7 +636,7 @@ const styles = StyleSheet.create({
   },
   linkNegrita: {
     fontWeight: 'bold',
-    color: '#222222',
+    color: '#1b2a66',
   },
   dropdown: {
     backgroundColor: '#ffffff',

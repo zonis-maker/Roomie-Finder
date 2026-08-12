@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   navLogo: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#1b2a66',
   },
   navBotones: {
     flexDirection: 'row',
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
   },
   boton: {
     borderWidth: 1,
-    borderColor: '#333333',
+    borderColor: '#2f5fd9',
     borderRadius: 20,
     paddingVertical: 8,
     width: 115,
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
   },
   botonTexto: {
     fontSize: 14,
-    color: '#333333',
+    color: '#2f5fd9',
   },
   contenido: {
     flex: 1,
@@ -77,11 +78,11 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#222222',
+    color: '#0f1b4d',
   },
   subtitulo: {
     fontSize: 16,
-    color: '#888888',
+    color: '#666666',
     marginTop: 10,
   },
   botonTemp: {
